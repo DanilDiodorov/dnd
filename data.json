@@ -1,0 +1,39 @@
+{
+  "nodes": [
+    {
+      "id": "cKn1GEulxtP0ZxXvM0xBAkG1kF32Nrkp",
+      "type": "blockWithValue",
+      "data": {
+        "title": "var2",
+        "value": "1"
+      },
+      "position": {
+        "x": 183,
+        "y": 189
+      }
+    },
+    {
+      "id": "bXc32k9uh2dJN1eoFSICL4EWf3FqcFil",
+      "type": "block",
+      "data": {
+        "title": "var1"
+      },
+      "position": {
+        "x": 197,
+        "y": 68
+      }
+    },
+    {
+      "id": "jmcRDkqQiSGjl2KVKigVgZJhSshxVxdj",
+      "type": "block",
+      "data": {
+        "title": "var1"
+      },
+      "position": {
+        "x": 516,
+        "y": 135
+      }
+    }
+  ],
+  "edges": []
+}
