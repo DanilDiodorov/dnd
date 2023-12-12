@@ -10,7 +10,6 @@ import ReactFlow, {
 
 import 'reactflow/dist/style.css'
 import BlockWithValue from './components/BlockWithValue'
-import Block from './components/Block'
 import './App.css'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -46,7 +45,6 @@ const VisuallyHiddenInput = styled('input')({
 })
 
 const nodeTypes = {
-    block: Block,
     blockWithValue: BlockWithValue,
 }
 

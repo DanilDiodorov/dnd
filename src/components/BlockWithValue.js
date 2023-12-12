@@ -124,7 +124,7 @@ export default memo(({ data, isConnectable }) => {
     })
 
     return (
-        <Card style={{ minWidth: '300px' }}>
+        <Card style={{ minWidth: '400px' }}>
             <Handle type="target" id={data.title} position={Position.Left} />
             <CardHeader
                 onClick={() => {

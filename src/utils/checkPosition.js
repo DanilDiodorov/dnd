@@ -6,7 +6,7 @@ const checkPosition = (data) => {
         if (data[key].position === undefined) {
             data[key].position = { x, y }
             i++
-            x += 400
+            x += 500
             if (i === 5) {
                 x = 200
                 i = 0

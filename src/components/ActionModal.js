@@ -5,7 +5,16 @@ import {
     setConfigModalOpen,
     setCurrentConfigs,
 } from '../store/slices/modalSlice'
-import { Button, List, ListItem, TextField } from '@mui/material'
+import {
+    Button,
+    FormControl,
+    InputLabel,
+    List,
+    ListItem,
+    MenuItem,
+    Select,
+    TextField,
+} from '@mui/material'
 import { useForm } from 'react-hook-form'
 import { useEffect, useState } from 'react'
 import { setBlockAction } from '../store/slices/blockSlice'
@@ -20,6 +29,8 @@ const ActionModal = () => {
     const blocks = useSelector((state) => state.blocks)
     const { register, handleSubmit, setValue } = useForm()
     const dispatch = useDispatch()
+    const [action, setAction] = useState('')
+    const [start, setStart] = useState('')
 
     const handleClose = () => {
         dispatch(setActionModalOpen(false))
@@ -29,12 +40,14 @@ const ActionModal = () => {
         if (blocks)
             actions = blocks[currentAction?.name]?.actions[currentAction?.index]
         setValue('name', actions?.name)
-        setValue('action', actions?.action)
         setValue('type', actions?.type)
-        setValue('start_on', actions?.start_on)
+        setAction(actions?.action)
+        setStart(actions?.start_on)
     }, [actionModalOpen, blocks])
 
     const onSubmit = (data) => {
+        data.action = action
+        data.start_on = start
         dispatch(
             setBlockAction({
                 block: currentAction?.name,
@@ -58,32 +71,88 @@ const ActionModal = () => {
                         <TextField
                             {...register('name')}
                             fullWidth
-                            label="Name"
+                            label="Название"
                         />
                     </ListItem>
                     <ListItem>
-                        <TextField
-                            {...register('action')}
-                            fullWidth
-                            name="action"
-                            label="Action"
-                        />
+                        <FormControl fullWidth>
+                            <InputLabel id="action-label">Действие</InputLabel>
+                            <Select
+                                labelId="action-label"
+                                onChange={(e) => setAction(e.target.value)}
+                                value={action}
+                                label="Действие"
+                                fullWidth
+                            >
+                                <MenuItem value="astersay.actions.AioHttpAction">
+                                    http запрос
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.BooleanizeAction">
+                                    Булево
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.CaptureAction">
+                                    Прослушивание
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.ConvertAction">
+                                    Конверт
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.ParseNameAction">
+                                    Обработка имен
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.PauseAction">
+                                    Пауза
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.SayAction">
+                                    Фраза
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.SearchByBufferAction">
+                                    Искать внутри буффера
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.SilenceAction">
+                                    Событие тишины
+                                </MenuItem>
+                                <MenuItem value="astersay.actions.VariableSetAction">
+                                    Переменная
+                                </MenuItem>
+                            </Select>
+                        </FormControl>
                     </ListItem>
                     <ListItem>
                         <TextField
                             {...register('type')}
                             fullWidth
-                            name="type"
-                            label="Type"
+                            label="Тип"
                         />
                     </ListItem>
                     <ListItem>
-                        <TextField
-                            {...register('start_on')}
-                            fullWidth
-                            name="start_on"
-                            label="Start on"
-                        />
+                        <FormControl fullWidth>
+                            <InputLabel id="action-label">
+                                Начать после
+                            </InputLabel>
+                            <Select
+                                labelId="action-label"
+                                value={start}
+                                onChange={(e) => setStart(e.target.value)}
+                                fullWidth
+                                label="Начать после"
+                            >
+                                <MenuItem value="block_start">
+                                    В начале
+                                </MenuItem>
+                                {blocks[currentAction?.name]?.actions.map(
+                                    (act) => {
+                                        if (act.name !== actions?.name)
+                                            return (
+                                                <MenuItem
+                                                    value={`${act.name}__finish`}
+                                                >
+                                                    {act.name}
+                                                </MenuItem>
+                                            )
+                                    }
+                                )}
+                            </Select>
+                        </FormControl>
                     </ListItem>
                     <ListItem>
                         <Button
