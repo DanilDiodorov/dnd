@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import ReactFlow, {
     MiniMap,
     Controls,
@@ -31,6 +31,7 @@ import { styled } from '@mui/material/styles'
 import { Button } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import RenameBlockModal from './components/RenameBlockModal'
+import checkPosition from './utils/checkPosition'
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -89,7 +90,7 @@ export default function App() {
     const onChange = async (event) => {
         if (event.target.files) {
             const parsedData = await readJson(event.target.files[0])
-            dispatch(setBlocks(parsedData.blocks))
+            dispatch(setBlocks(checkPosition(parsedData.blocks)))
         }
     }
 

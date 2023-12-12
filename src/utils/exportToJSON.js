@@ -4,6 +4,7 @@ const exportToJson = async (blocks) => {
 
     const data = {}
     data.blocks = blocks
+    data['dialog_class'] = 'astersay.dialog.BaseDialog'
 
     if (window.navigator && window.navigator.msSaveOrOpenBlob) {
         var blob = new Blob(
