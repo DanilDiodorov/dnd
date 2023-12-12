@@ -1,39 +1,129 @@
 {
   "nodes": [
     {
-      "id": "cKn1GEulxtP0ZxXvM0xBAkG1kF32Nrkp",
+      "width": 172,
+      "height": 72,
+      "id": "DhRlBamhLLzzOovNI9stbJFcDeVZRH6a",
       "type": "blockWithValue",
       "data": {
         "title": "var2",
         "value": "1"
       },
       "position": {
-        "x": 183,
-        "y": 189
-      }
+        "x": 802.2242531447326,
+        "y": 145.56379594121245
+      },
+      "selected": true,
+      "positionAbsolute": {
+        "x": 802.2242531447326,
+        "y": 145.56379594121245
+      },
+      "dragging": true
     },
     {
-      "id": "bXc32k9uh2dJN1eoFSICL4EWf3FqcFil",
+      "width": 172,
+      "height": 52,
+      "id": "8BYKSpi1hu01y71HNEFxpgPqXdH2RMCh",
       "type": "block",
       "data": {
         "title": "var1"
       },
       "position": {
-        "x": 197,
-        "y": 68
+        "x": 538.7926186615935,
+        "y": 430.47082596299634
+      },
+      "selected": true,
+      "positionAbsolute": {
+        "x": 538.7926186615935,
+        "y": 430.47082596299634
+      },
+      "dragging": true
+    },
+    {
+      "width": 172,
+      "height": 72,
+      "id": "JRdQ88v8ojUTSTN5zLIv6rEmroWE11L8",
+      "type": "blockWithValue",
+      "data": {
+        "title": "var2",
+        "value": "1"
+      },
+      "position": {
+        "x": 1097.9815466539835,
+        "y": 421.8370829652327
+      },
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1097.9815466539835,
+        "y": 421.8370829652327
+      },
+      "dragging": true
+    },
+    {
+      "width": 172,
+      "height": 72,
+      "id": "dL04ecmv0rpEj0UB8KsT9nO3tgV3CtKW",
+      "type": "blockWithValue",
+      "data": {
+        "title": "var2",
+        "value": "1"
+      },
+      "position": {
+        "x": 1325.0939208098575,
+        "y": 109.28731284097137
+      },
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1325.0939208098575,
+        "y": 109.28731284097137
+      },
+      "dragging": true
+    },
+    {
+      "id": "d1kzMbzTTukMBzMyQNjRpEDBfyCCDHIH",
+      "type": "blockWithValue",
+      "data": {
+        "title": "var2",
+        "value": "1"
+      },
+      "position": {
+        "x": 990.9940420644036,
+        "y": 3.735330846707468
       }
     },
     {
-      "id": "jmcRDkqQiSGjl2KVKigVgZJhSshxVxdj",
+      "id": "gWkBiTCPzyheowz0cCX7sLSJDc859EWW",
       "type": "block",
       "data": {
         "title": "var1"
       },
       "position": {
-        "x": 516,
-        "y": 135
+        "x": 389.4436028267819,
+        "y": -8.452377039438272
       }
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "source": "DhRlBamhLLzzOovNI9stbJFcDeVZRH6a",
+      "sourceHandle": "a",
+      "target": "JRdQ88v8ojUTSTN5zLIv6rEmroWE11L8",
+      "targetHandle": null,
+      "id": 1
+    },
+    {
+      "source": "8BYKSpi1hu01y71HNEFxpgPqXdH2RMCh",
+      "sourceHandle": "a",
+      "target": "DhRlBamhLLzzOovNI9stbJFcDeVZRH6a",
+      "targetHandle": null,
+      "id": 2
+    },
+    {
+      "source": "JRdQ88v8ojUTSTN5zLIv6rEmroWE11L8",
+      "sourceHandle": "a",
+      "target": "dL04ecmv0rpEj0UB8KsT9nO3tgV3CtKW",
+      "targetHandle": null,
+      "id": 3
+    }
+  ]
 }

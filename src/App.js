@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import ReactFlow, {
     MiniMap,
     Controls,
     Background,
     useNodesState,
     useEdgesState,
-    addEdge,
     useReactFlow,
 } from 'reactflow'
 
@@ -13,8 +12,37 @@ import 'reactflow/dist/style.css'
 import BlockWithValue from './components/BlockWithValue'
 import Block from './components/Block'
 import './App.css'
-import randomstring from 'randomstring'
-import axios from 'axios'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+    addBlock,
+    deleteBlock,
+    deleteExitPointBlock,
+    setBlockPosition,
+    setBlocks,
+} from './store/slices/blockSlice'
+import exportToJson from './utils/exportToJSON'
+import convertBlocks from './utils/convertBlocks'
+import readJson from './utils/readJSON'
+import ExitPointModal from './components/ExitPointModal'
+import ActionModal from './components/ActionModal'
+import ConfigModal from './components/ConfigModal'
+import { Toaster } from 'sonner'
+import { styled } from '@mui/material/styles'
+import { Button } from '@mui/material'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import RenameBlockModal from './components/RenameBlockModal'
+
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+})
 
 const nodeTypes = {
     block: Block,
@@ -24,26 +52,16 @@ const nodeTypes = {
 export default function App() {
     const [nodes, setNodes, onNodesChange] = useNodesState([])
     const [edges, setEdges, onEdgesChange] = useEdgesState([])
+    const blocks = useSelector((state) => state.blocks)
+    const dispatch = useDispatch()
     const { screenToFlowPosition } = useReactFlow()
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
 
     const onInit = async () => {
         const canvas = document.querySelector('.canvas')
         const block1 = document.querySelector('.varient-1')
-        const block2 = document.querySelector('.varient-2')
         canvas.addEventListener('dragover', allowDrop)
         block1.addEventListener('dragstart', drag)
-        block2.addEventListener('dragstart', drag)
         canvas.addEventListener('drop', drop)
-
-        const nodesRequest = await axios.get(`http://localhost:3001/nodes`)
-        const edgesRequest = await axios.get(`http://localhost:3001/edges`)
-
-        setNodes(nodesRequest.data)
-        setEdges(edgesRequest.data)
 
         function allowDrop(e) {
             e.preventDefault()
@@ -55,193 +73,99 @@ export default function App() {
 
         function drop(e) {
             const id = e.dataTransfer.getData('id')
-            let data
-
             if (id === 'var1') {
-                data = {
-                    id: randomstring.generate(),
-                    type: 'block',
-                    data: { title: id },
-                    position: screenToFlowPosition({
-                        x: e.clientX,
-                        y: e.clientY,
-                    }),
-                }
-                setNodes((nds) => nds.concat(data))
-            } else {
-                data = {
-                    id: randomstring.generate(),
-                    type: 'blockWithValue',
-                    data: { title: id, value: '1' },
-                    position: screenToFlowPosition({
-                        x: e.clientX,
-                        y: e.clientY,
-                    }),
-                }
-                setNodes((nds) => nds.concat(data))
+                dispatch(
+                    addBlock(
+                        screenToFlowPosition({
+                            x: e.clientX,
+                            y: e.clientY,
+                        })
+                    )
+                )
             }
-            axios.post('http://localhost:3001/nodes', data)
         }
     }
-
-    const readJsonFile = (file) =>
-        new Promise((resolve, reject) => {
-            const fileReader = new FileReader()
-
-            fileReader.onload = (event) => {
-                if (event.target) {
-                    resolve(JSON.parse(event.target.result))
-                }
-            }
-
-            fileReader.onerror = (error) => reject(error)
-            fileReader.readAsText(file)
-        })
 
     const onChange = async (event) => {
         if (event.target.files) {
-            const parsedData = await readJsonFile(event.target.files[0])
-
-            setNodes(parsedData.nodes)
-            setEdges(parsedData.edges)
-            const nodesRequest = await axios.get(`http://localhost:3001/nodes`)
-            const edgesRequest = await axios.get(`http://localhost:3001/edges`)
-
-            try {
-                for (let i = 0; i < nodesRequest.data.length; i++) {
-                    await axios.delete(
-                        `http://localhost:3001/nodes/${nodesRequest.data[i].id}`
-                    )
-                    await new Promise((resolve) => setTimeout(resolve, 500)) // Задержка в 1 секунду
-                }
-                console.log('Все запросы успешно выполнены')
-            } catch (error) {
-                console.error('Произошла ошибка при выполнении запросов', error)
-            }
-            try {
-                for (let i = 0; i < edgesRequest.data.length; i++) {
-                    await axios.delete(
-                        `http://localhost:3001/edges/${edgesRequest.data[i].id}`
-                    )
-                    await new Promise((resolve) => setTimeout(resolve, 500)) // Задержка в 1 секунду
-                }
-                console.log('Все запросы успешно выполнены')
-            } catch (error) {
-                console.error('Произошла ошибка при выполнении запросов', error)
-            }
-
-            try {
-                for (let i = 0; i < parsedData.nodes.length; i++) {
-                    await axios.post(
-                        `http://localhost:3001/nodes/`,
-                        parsedData.nodes[i]
-                    )
-                    await new Promise((resolve) => setTimeout(resolve, 500)) // Задержка в 1 секунду
-                }
-                console.log('Все запросы успешно выполнены')
-            } catch (error) {
-                console.error('Произошла ошибка при выполнении запросов', error)
-            }
-            try {
-                for (let i = 0; i < parsedData.edges.length; i++) {
-                    await axios.post(
-                        `http://localhost:3001/edges/`,
-                        parsedData.edges[i]
-                    )
-                    await new Promise((resolve) => setTimeout(resolve, 500)) // Задержка в 1 секунду
-                }
-                console.log('Все запросы успешно выполнены')
-            } catch (error) {
-                console.error('Произошла ошибка при выполнении запросов', error)
-            }
+            const parsedData = await readJson(event.target.files[0])
+            dispatch(setBlocks(parsedData.blocks))
         }
     }
 
-    const exportToJson = async () => {
-        let filename = 'export.json'
-        let contentType = 'application/json;charset=utf-8;'
-
-        const data = {}
-        const nodesRequest = await axios.get('http://localhost:3001/nodes')
-        const edgesRequest = await axios.get('http://localhost:3001/edges')
-        data.nodes = nodesRequest.data
-        data.edges = edgesRequest.data
-
-        console.log(data)
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            var blob = new Blob(
-                [decodeURIComponent(encodeURI(JSON.stringify(data)))],
-                { type: contentType }
-            )
-            navigator.msSaveOrOpenBlob(blob, filename)
-        } else {
-            var a = document.createElement('a')
-            a.download = filename
-            a.href =
-                'data:' +
-                contentType +
-                ',' +
-                encodeURIComponent(JSON.stringify(data))
-            a.target = '_blank'
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
+    useEffect(() => {
+        if (blocks) {
+            const [newBlocks, newEdges] = convertBlocks(blocks)
+            setNodes(newBlocks)
+            setEdges(newEdges)
         }
-    }
+    }, [blocks])
 
-    const onConnect = useCallback(
-        (params) => {
-            axios.post('http://localhost:3001/edges', params)
-            setEdges((eds) => addEdge(params, eds))
-        },
-        [setEdges]
-    )
+    const onConnect = useCallback((params) => {}, [setEdges])
 
     const handleNodeDragStop = async (event, node, nodes) => {
         for (let i = 0; i < nodes.length; i++) {
-            await axios.put(
-                `http://localhost:3001/nodes/${nodes[i].id}`,
-                nodes[i]
+            dispatch(
+                setBlockPosition({
+                    id: nodes[i].id,
+                    position: nodes[i].position,
+                })
             )
-            await new Promise((resolve) => setTimeout(resolve, 500))
         }
     }
 
     const handleNodesDelete = async (nodes) => {
         for (let i = 0; i < nodes.length; i++) {
-            await axios.delete(`http://localhost:3001/nodes/${nodes[i].id}`)
-            await new Promise((resolve) => setTimeout(resolve, 500))
+            dispatch(deleteBlock(nodes[i].data.title))
         }
     }
 
     const handleEdgesDelete = async (edges) => {
         for (let i = 0; i < edges.length; i++) {
-            await axios.delete(`http://localhost:3001/edges/${edges[i].id}`)
-            await new Promise((resolve) => setTimeout(resolve, 500))
+            dispatch(
+                deleteExitPointBlock({
+                    block: edges[i].source,
+                    index: edges[i].data.index,
+                })
+            )
         }
     }
 
     return (
         <>
+            <Toaster position="top-right" richColors />
+            <ActionModal />
+            <ExitPointModal />
+            <ConfigModal />
+            <RenameBlockModal />
             <div className="tools">
                 <div className="left">
                     <div className="block varient-1" draggable="true" id="var1">
-                        varient 1
-                    </div>
-                    <div className="block varient-2" draggable="true" id="var2">
-                        varient 2
+                        Добавить блок
                     </div>
                 </div>
                 <div className="right">
-                    <input
-                        type="file"
-                        accept=".json,application/json"
-                        onChange={onChange}
-                    />
-                    <button onClick={exportToJson}>Download</button>
+                    <Button
+                        component="label"
+                        variant="contained"
+                        startIcon={<CloudUploadIcon />}
+                    >
+                        Upload file
+                        <VisuallyHiddenInput
+                            type="file"
+                            accept=".json,application/json"
+                            onChange={onChange}
+                        />
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => exportToJson(blocks)}
+                    >
+                        Download
+                    </Button>
                 </div>
             </div>
-            <div className="canvas" style={{ width: '100vw', height: '100vh' }}>
+            <div className="canvas">
                 <ReactFlow
                     onNodeDragStop={handleNodeDragStop}
                     nodes={nodes}

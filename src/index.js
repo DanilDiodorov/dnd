@@ -3,12 +3,17 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { ReactFlowProvider } from 'reactflow'
+import { store } from './store'
+import { Provider } from 'react-redux'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
     <React.StrictMode>
         <ReactFlowProvider>
-            <App />
+            <Provider store={store}>
+                <App />
+            </Provider>
+            ,
         </ReactFlowProvider>
     </React.StrictMode>
 )
