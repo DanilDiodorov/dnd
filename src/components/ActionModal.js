@@ -19,6 +19,7 @@ import { useForm } from 'react-hook-form'
 import { useEffect, useState } from 'react'
 import { setBlockAction } from '../store/slices/blockSlice'
 import { toast } from 'sonner'
+import ACTIONS from '../configs/actions'
 
 let actions = null
 
@@ -40,12 +41,12 @@ const ActionModal = () => {
         if (blocks)
             actions = blocks[currentAction?.name]?.actions[currentAction?.index]
         setValue('name', actions?.name)
-        setValue('type', actions?.type)
         setAction(actions?.action)
         setStart(actions?.start_on)
     }, [actionModalOpen, blocks])
 
     const onSubmit = (data) => {
+        data.type = ACTIONS[action].type
         data.action = action
         data.start_on = start
         dispatch(
@@ -84,45 +85,13 @@ const ActionModal = () => {
                                 label="Действие"
                                 fullWidth
                             >
-                                <MenuItem value="astersay.actions.AioHttpAction">
-                                    http запрос
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.BooleanizeAction">
-                                    Булево
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.CaptureAction">
-                                    Прослушивание
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.ConvertAction">
-                                    Конверт
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.ParseNameAction">
-                                    Обработка имен
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.PauseAction">
-                                    Пауза
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.SayAction">
-                                    Фраза
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.SearchByBufferAction">
-                                    Искать внутри буффера
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.SilenceAction">
-                                    Событие тишины
-                                </MenuItem>
-                                <MenuItem value="astersay.actions.VariableSetAction">
-                                    Переменная
-                                </MenuItem>
+                                {Object.keys(ACTIONS).map((key) => (
+                                    <MenuItem value={key}>
+                                        {ACTIONS[key].name}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
-                    </ListItem>
-                    <ListItem>
-                        <TextField
-                            {...register('type')}
-                            fullWidth
-                            label="Тип"
-                        />
                     </ListItem>
                     <ListItem>
                         <FormControl fullWidth>
