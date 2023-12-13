@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import ACTIONS from '../../configs/actions'
 
 const initialState = {}
 
@@ -32,10 +33,10 @@ export const blockSlice = createSlice({
         },
         addAction: (state, action) => {
             state[action.payload].actions.push({
-                name: `action_${state[action.payload].actions.length}`,
-                action: '',
-                type: '',
-                start_on: '',
+                name: `action_${state[action.payload].actions.length + 1}`,
+                action: 'astersay.actions.CaptureAction',
+                type: ACTIONS['astersay.actions.CaptureAction'].type,
+                start_on: 'block_start',
             })
             return state
         },
@@ -82,10 +83,13 @@ export const blockSlice = createSlice({
         },
         addBlock: (state, action) => {
             const count = Object.keys(state).length
-            state[`block_${count}`] = {}
-            state[`block_${count}`].position = action.payload
-            state[`block_${count}`].actions = []
-            state[`block_${count}`].exit_points = []
+            let name
+            if (count > 0) name = `block_${count}`
+            else name = 'start'
+            state[name] = {}
+            state[name].position = action.payload
+            state[name].actions = []
+            state[name].exit_points = []
             return state
         },
         deleteBlock: (state, action) => {
@@ -96,6 +100,24 @@ export const blockSlice = createSlice({
             state[action.payload.newName] = state[action.payload.oldName]
             delete state[action.payload.oldName]
             return state
+        },
+        duplicateBlock: (state, action) => {
+            let count = 1
+            while (state[`${action.payload}_copy_${count}`]) {
+                count++
+            }
+            state[`${action.payload}_copy_${count}`] = {}
+            for (let key in state[action.payload]) {
+                if (key === 'position') {
+                    state[`${action.payload}_copy_${count}`].position = {
+                        x: state[action.payload][key].x + 50,
+                        y: state[action.payload][key].y + 50,
+                    }
+                } else {
+                    state[`${action.payload}_copy_${count}`][key] =
+                        state[action.payload][key]
+                }
+            }
         },
     },
 })
@@ -114,6 +136,7 @@ export const {
     addBlock,
     deleteBlock,
     renameBlock,
+    duplicateBlock,
 } = blockSlice.actions
 
 export default blockSlice.reducer

@@ -95,6 +95,8 @@ const ConfigModal = () => {
                     })
                 )
             }
+        } else {
+            setFields(<ListItem>Нет конфигураций</ListItem>)
         }
     }, [configs])
 

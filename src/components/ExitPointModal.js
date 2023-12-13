@@ -12,11 +12,11 @@ import {
     Select,
     TextField,
 } from '@mui/material'
-import { Controller, useForm } from 'react-hook-form'
 import convertValue from '../utils/convertValue'
 import { setCondition } from '../store/slices/blockSlice'
 import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 
 const ExitPointModal = () => {
     const { exitPointModalOpen, currentExitPoint } = useSelector(
@@ -24,8 +24,10 @@ const ExitPointModal = () => {
     )
     const blocks = useSelector((state) => state.blocks)
     const dispatch = useDispatch()
-    const { register, handleSubmit, control, setValue, unregister } = useForm()
+    const { register, handleSubmit, setValue, unregister } = useForm()
     const [exitPoint, setExitPoint] = useState(null)
+    const [localCondition, setLocalCondition] = useState('')
+    const [variable, setVariable] = useState('')
 
     const handleClose = () => {
         setExitPoint(null)
@@ -44,12 +46,11 @@ const ExitPointModal = () => {
                     currentExitPoint?.index
                 ]
             )
-    }, [blocks, exitPointModalOpen, currentExitPoint])
+    }, [exitPointModalOpen])
 
     const onSubmit = (data) => {
-        if (!data.condition) {
-            data.condition = exitPoint.condition[1]
-        }
+        data.condition = localCondition
+        data.variable = variable
         if (data.condition === 'in') {
             data.value = convertValue(data.value.toString(), 'object')
             data.value = data.value.map((val) => {
@@ -74,8 +75,9 @@ const ExitPointModal = () => {
 
     useEffect(() => {
         setValue('block', exitPoint?.block)
-        setValue('variable', exitPoint?.condition[0])
         setValue('value', exitPoint?.condition[2])
+        setLocalCondition(exitPoint?.condition[1] || '=')
+        setVariable(exitPoint?.condition[0] || '')
     }, [exitPoint])
 
     return (
@@ -101,31 +103,46 @@ const ExitPointModal = () => {
                             gap: '10px',
                         }}
                     >
-                        <TextField
-                            defaultValue={exitPoint?.condition[0]}
-                            {...register('variable')}
-                            label="Variable"
-                        />
-
-                        <Controller
-                            name="condition"
-                            control={control}
-                            render={({ field: { value, onChange }, field }) => (
-                                <Select
-                                    {...field}
-                                    value={
-                                        value
-                                            ? value
-                                            : exitPoint?.condition[1] ?? ''
-                                    }
-                                    onChange={onChange}
-                                >
-                                    <MenuItem value={'='}>=</MenuItem>
-                                    <MenuItem value={'in'}>in</MenuItem>
-                                </Select>
+                        <Select
+                            value={variable}
+                            onChange={(e) => setVariable(e.target.value)}
+                            defaultValue={''}
+                        >
+                            <MenuItem value={''}>Не выбрано</MenuItem>
+                            {blocks[currentExitPoint?.name]?.actions ? (
+                                blocks[currentExitPoint?.name]?.actions.map(
+                                    (action) => (
+                                        <MenuItem
+                                            value={`${action.name + '_result'}`}
+                                        >
+                                            {`${action.name}_result`}
+                                        </MenuItem>
+                                    )
+                                )
+                            ) : (
+                                <></>
                             )}
-                        />
-
+                            {blocks[currentExitPoint?.name]?.actions ? (
+                                blocks[currentExitPoint?.name]?.actions.map(
+                                    (action) => (
+                                        <MenuItem
+                                            value={`${action.name + '_value'}`}
+                                        >
+                                            {`${action.name}_value`}
+                                        </MenuItem>
+                                    )
+                                )
+                            ) : (
+                                <></>
+                            )}
+                        </Select>
+                        <Select
+                            value={localCondition}
+                            onChange={(e) => setLocalCondition(e.target.value)}
+                        >
+                            <MenuItem value="=">=</MenuItem>
+                            <MenuItem value="in">in</MenuItem>
+                        </Select>
                         <TextField
                             {...register('value')}
                             defaultValue={exitPoint?.condition[2]}

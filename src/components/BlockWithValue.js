@@ -4,10 +4,12 @@ import {
     ListItem,
     ListItemText,
     ListItemButton,
-    CardHeader,
     Divider,
     Button,
     IconButton,
+    Menu,
+    MenuItem,
+    ListItemIcon,
 } from '@mui/material'
 import { memo } from 'react'
 import { useDispatch } from 'react-redux'
@@ -24,12 +26,19 @@ import AddIcon from '@mui/icons-material/Add'
 import {
     addAction,
     addExitPoint,
+    deleteBlock,
     deleteElement,
     deleteExitPointBlock,
+    duplicateBlock,
     setExitPoint,
 } from '../store/slices/blockSlice'
 import DeleteIcon from '@mui/icons-material/Delete'
 import styled from 'styled-components'
+import * as React from 'react'
+import PopupState, { bindTrigger, bindMenu } from 'material-ui-popup-state'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ACTIONS from '../configs/actions'
+import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 
 export default memo(({ data, isConnectable }) => {
     const dispatch = useDispatch()
@@ -53,7 +62,10 @@ export default memo(({ data, isConnectable }) => {
                         dispatch(setActionModalOpen(true))
                     }}
                 >
-                    <ListItemText>{action.name}</ListItemText>
+                    {ACTIONS[action.action].icon}
+                    <ListItemText style={{ marginLeft: '10px' }}>
+                        {action.name}
+                    </ListItemText>
                     <StyledIconButton
                         className="icon-button"
                         aria-label="delete"
@@ -96,7 +108,6 @@ export default memo(({ data, isConnectable }) => {
                         <DeleteIcon />
                     </StyledIconButton>
                 </StyledListButton>
-
                 <Handle
                     type="source"
                     id={`${data.title}_${index}`}
@@ -125,14 +136,59 @@ export default memo(({ data, isConnectable }) => {
 
     return (
         <Card style={{ minWidth: '400px' }}>
-            <Handle type="target" id={data.title} position={Position.Left} />
-            <CardHeader
-                onClick={() => {
-                    dispatch(setRenameBlockModalOpen(true))
-                    dispatch(setCurrentBlockName(data.title))
-                }}
-                title={data.title}
-            />
+            {data.title !== 'start' && (
+                <Handle
+                    type="target"
+                    id={data.title}
+                    position={Position.Left}
+                />
+            )}
+            <Header>
+                <Title>{data.title}</Title>
+                <PopupState variant="popover" popupId="demo-popup-menu">
+                    {(popupState) => (
+                        <>
+                            <IconButton
+                                aria-label="delete"
+                                size="small"
+                                {...bindTrigger(popupState)}
+                            >
+                                <MoreVertIcon />
+                            </IconButton>
+                            <Menu {...bindMenu(popupState)}>
+                                <MenuItem
+                                    onClick={() => {
+                                        dispatch(setRenameBlockModalOpen(true))
+                                        dispatch(
+                                            setCurrentBlockName(data.title)
+                                        )
+                                        popupState.close()
+                                    }}
+                                >
+                                    Переименовать
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() => {
+                                        dispatch(duplicateBlock(data.title))
+                                        popupState.close()
+                                    }}
+                                >
+                                    Дублировать
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() => {
+                                        dispatch(deleteBlock(data.title))
+                                        popupState.close()
+                                    }}
+                                >
+                                    Удалить
+                                </MenuItem>
+                            </Menu>
+                        </>
+                    )}
+                </PopupState>
+            </Header>
+            <Divider />
             <List>
                 {actionsBlock}
                 <ListItem>
@@ -187,7 +243,23 @@ const StyledIconButton = styled(IconButton)`
 `
 
 const StyledListButton = styled(ListItemButton)`
+    width: 100%;
+    color: black;
+
     &:hover .icon-button {
         opacity: 1;
     }
 `
+
+const Header = styled.div`
+    display: flex;
+    padding: 20px;
+    justify-content: space-between;
+`
+
+const Title = styled.h2`
+    margin: 0;
+    padding: 0;
+`
+
+const MenuButton = styled.div``

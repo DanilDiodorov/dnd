@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react'
 import { setBlockAction } from '../store/slices/blockSlice'
 import { toast } from 'sonner'
 import ACTIONS from '../configs/actions'
+import convertValue from '../utils/convertValue'
 
 let actions = null
 
@@ -41,14 +42,15 @@ const ActionModal = () => {
         if (blocks)
             actions = blocks[currentAction?.name]?.actions[currentAction?.index]
         setValue('name', actions?.name)
-        setAction(actions?.action)
-        setStart(actions?.start_on)
-    }, [actionModalOpen, blocks])
+        setAction(actions?.action || '')
+        setStart(actions?.start_on || '')
+    }, [actionModalOpen])
 
     const onSubmit = (data) => {
         data.type = ACTIONS[action].type
         data.action = action
-        data.start_on = start
+        if (!Array.isArray(start)) data.start_on = convertValue(start, 'object')
+        else data.start_on = start
         dispatch(
             setBlockAction({
                 block: currentAction?.name,
