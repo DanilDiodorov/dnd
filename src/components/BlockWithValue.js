@@ -96,7 +96,7 @@ export default memo(({ data, isConnectable }) => {
                         dispatch(setExitPointModalOpen(true))
                     }}
                 >
-                    <ListItemText>Exit Point {index + 1}</ListItemText>
+                    <ListItemText>Условие выхода {index + 1}</ListItemText>
                     <StyledIconButton
                         className="icon-button"
                         aria-label="delete"
