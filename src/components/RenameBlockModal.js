@@ -6,7 +6,7 @@ import {
 } from '../store/slices/modalSlice'
 import { Button, List, ListItem, TextField } from '@mui/material'
 import { useForm } from 'react-hook-form'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { renameBlock } from '../store/slices/blockSlice'
 
 const RenameBlockModal = () => {
@@ -14,19 +14,36 @@ const RenameBlockModal = () => {
         (state) => state.modals
     )
     const dispatch = useDispatch()
-    const { register, handleSubmit, unregister, setValue } = useForm()
+    const {
+        register,
+        handleSubmit,
+        unregister,
+        setValue,
+        formState: { errors },
+    } = useForm()
+    const blocks = useSelector((state) => state.blocks)
+    const [error, setError] = useState(false)
 
     const handleClose = () => {
         dispatch(setRenameBlockModalOpen(false))
         dispatch(setCurrentBlockName(null))
+        setError(false)
         unregister('block_name')
     }
 
     const onSumbit = (data) => {
-        dispatch(
-            renameBlock({ newName: data.block_name, oldName: currentBlockName })
-        )
-        handleClose()
+        if (Object.keys(blocks).includes(data.block_name)) {
+            setError(true)
+        } else {
+            if (data.block_name !== currentBlockName)
+                dispatch(
+                    renameBlock({
+                        newName: data.block_name,
+                        oldName: currentBlockName,
+                    })
+                )
+            handleClose()
+        }
     }
 
     useEffect(() => {
@@ -43,8 +60,9 @@ const RenameBlockModal = () => {
                 <form onSubmit={handleSubmit(onSumbit)}>
                     <ListItem>
                         <TextField
-                            {...register('block_name')}
+                            {...register('block_name', { required: true })}
                             fullWidth
+                            error={!!errors.block_name || error}
                             label="Название"
                         />
                     </ListItem>

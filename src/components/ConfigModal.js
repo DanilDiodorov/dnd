@@ -39,12 +39,18 @@ const ConfigModal = () => {
     }
 
     useEffect(() => {
-        if (blocks)
+        if (blocks) {
             setConfig(
                 blocks[currentConfigs?.block]?.actions[currentConfigs?.index]
                     .config
             )
-    }, [currentConfigs, configModalOpen, blocks])
+            if (
+                !blocks[currentConfigs?.block]?.actions[currentConfigs?.index]
+                    .config
+            )
+                setFields(<ListItem>Нет конфигураций</ListItem>)
+        }
+    }, [configModalOpen, blocks])
 
     useEffect(() => {
         if (configs) {
@@ -53,7 +59,9 @@ const ConfigModal = () => {
             } else {
                 setFields(
                     Object.keys(configs).map((key, index) => {
-                        let type = typeof configs[key]
+                        let type = Array.isArray(configs[key])
+                            ? 'array'
+                            : typeof configs[key]
                         return (
                             <ListItem
                                 key={index}
@@ -64,14 +72,20 @@ const ConfigModal = () => {
                                 }}
                             >
                                 <TextField
-                                    {...register(`name_${index}`)}
+                                    {...register(`name_${index}`, {
+                                        required: true,
+                                    })}
                                     defaultValue={key}
                                     label="Имя"
                                     id={`name_${index}`}
                                 />
                                 <TextField
                                     {...register(`value_${index}`)}
-                                    defaultValue={configs[key]}
+                                    defaultValue={
+                                        type === 'object'
+                                            ? JSON.stringify(configs[key])
+                                            : configs[key]
+                                    }
                                     label="Значение"
                                 />
                                 <Select
@@ -81,7 +95,8 @@ const ConfigModal = () => {
                                     <MenuItem value="number">number</MenuItem>
                                     <MenuItem value="string">string</MenuItem>
                                     <MenuItem value="boolean">boolean</MenuItem>
-                                    <MenuItem value="object">array</MenuItem>
+                                    <MenuItem value="array">array</MenuItem>
+                                    <MenuItem value="object">object</MenuItem>
                                 </Select>
                                 <IconButton
                                     onClick={() => onDelete(index)}
@@ -101,25 +116,33 @@ const ConfigModal = () => {
     }, [configs])
 
     const onSubmit = (data) => {
-        const newData = {}
-        let i = 0
-        while (true) {
-            if (!data[`name_${i}`]) break
-            newData[data[`name_${i}`]] = convertValue(
-                data[`value_${i}`],
-                data[`type_${i}`]
+        try {
+            const newData = {}
+            let i = 0
+            while (true) {
+                if (!data[`name_${i}`]) break
+                try {
+                    newData[data[`name_${i}`]] = convertValue(
+                        data[`value_${i}`],
+                        data[`type_${i}`]
+                    )
+                } catch (error) {
+                    throw new Error('Ошибка')
+                }
+                i++
+            }
+            dispatch(
+                setConfigs({
+                    block: currentConfigs.block,
+                    index: currentConfigs.index,
+                    config: newData,
+                })
             )
-            i++
+            toast.success('Успешно сохранено!')
+            handleClose(data)
+        } catch (error) {
+            toast.error('Неправильный формат JSON')
         }
-        dispatch(
-            setConfigs({
-                block: currentConfigs.block,
-                index: currentConfigs.index,
-                config: newData,
-            })
-        )
-        toast.success('Успешно сохранено!')
-        handleClose(data)
     }
 
     const onDelete = (i) => {

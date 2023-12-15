@@ -5,6 +5,7 @@ const initialState = {
     exitPointModalOpen: false,
     configModalOpen: false,
     renameBlockModalOpen: false,
+    codeModalOpen: false,
     currentAction: null,
     currentConfigs: null,
     currentExitPoint: null,
@@ -26,6 +27,9 @@ export const modalSlice = createSlice({
         },
         setRenameBlockModalOpen: (state, action) => {
             state.renameBlockModalOpen = action.payload
+        },
+        setCodeModalOpen: (state, action) => {
+            state.codeModalOpen = action.payload
         },
         setCurrentAction: (state, action) => {
             state.currentAction = action.payload
@@ -51,6 +55,7 @@ export const {
     setConfigModalOpen,
     setRenameBlockModalOpen,
     setCurrentBlockName,
+    setCodeModalOpen,
 } = modalSlice.actions
 
 export default modalSlice.reducer

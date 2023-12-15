@@ -52,7 +52,7 @@ const ExitPointModal = () => {
         data.condition = localCondition
         data.variable = variable
         if (data.condition === 'in') {
-            data.value = convertValue(data.value.toString(), 'object')
+            data.value = convertValue(data.value.toString(), 'array')
             data.value = data.value.map((val) => {
                 return convertValue(val, 'boolean')
             })

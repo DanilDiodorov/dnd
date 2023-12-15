@@ -6,8 +6,11 @@ import {
     setCurrentConfigs,
 } from '../store/slices/modalSlice'
 import {
+    Box,
     Button,
+    Checkbox,
     FormControl,
+    FormControlLabel,
     InputLabel,
     List,
     ListItem,
@@ -29,12 +32,22 @@ const ActionModal = () => {
         (state) => state.modals
     )
     const blocks = useSelector((state) => state.blocks)
-    const { register, handleSubmit, setValue } = useForm()
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        unregister,
+        setValue,
+    } = useForm()
     const dispatch = useDispatch()
     const [action, setAction] = useState('')
     const [start, setStart] = useState('')
+    const [isCustom, setIsCustom] = useState(false)
 
     const handleClose = () => {
+        unregister('name')
+        unregister('action')
+        unregister('type')
         dispatch(setActionModalOpen(false))
     }
 
@@ -44,12 +57,25 @@ const ActionModal = () => {
         setValue('name', actions?.name)
         setAction(actions?.action || '')
         setStart(actions?.start_on || '')
+        setValue('action', actions?.action || '')
+        setValue('type', actions?.type || '')
+        setIsCustom(!Object.keys(ACTIONS).includes(actions?.action))
     }, [actionModalOpen])
 
+    useEffect(() => {
+        if (!isCustom) setAction('astersay.actions.CaptureAction')
+    }, [isCustom])
+
     const onSubmit = (data) => {
-        data.type = ACTIONS[action].type
-        data.action = action
-        if (!Array.isArray(start)) data.start_on = convertValue(start, 'object')
+        if (!isCustom) {
+            if (ACTIONS[action]) {
+                data.type = ACTIONS[action].type
+            } else {
+                data.type = ''
+            }
+            data.action = action
+        }
+        if (!Array.isArray(start)) data.start_on = convertValue(start, 'array')
         else data.start_on = start
         dispatch(
             setBlockAction({
@@ -72,28 +98,65 @@ const ActionModal = () => {
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <ListItem>
                         <TextField
-                            {...register('name')}
+                            {...register('name', {
+                                required: 'Заполните поле',
+                            })}
+                            error={!!errors.name}
                             fullWidth
                             label="Название"
                         />
                     </ListItem>
+                    {isCustom ? (
+                        <>
+                            <ListItem>
+                                <TextField
+                                    label="Действие"
+                                    {...register('action')}
+                                    fullWidth
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <TextField
+                                    label="Типы"
+                                    {...register('type')}
+                                    fullWidth
+                                />
+                            </ListItem>
+                        </>
+                    ) : (
+                        <ListItem>
+                            <FormControl fullWidth>
+                                <InputLabel id="action-label">
+                                    Действие
+                                </InputLabel>
+                                <Select
+                                    labelId="action-label"
+                                    onChange={(e) => setAction(e.target.value)}
+                                    value={action}
+                                    label="Действие"
+                                    fullWidth
+                                >
+                                    {Object.keys(ACTIONS).map((key) => (
+                                        <MenuItem value={key}>
+                                            {ACTIONS[key].name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </ListItem>
+                    )}
                     <ListItem>
-                        <FormControl fullWidth>
-                            <InputLabel id="action-label">Действие</InputLabel>
-                            <Select
-                                labelId="action-label"
-                                onChange={(e) => setAction(e.target.value)}
-                                value={action}
-                                label="Действие"
-                                fullWidth
-                            >
-                                {Object.keys(ACTIONS).map((key) => (
-                                    <MenuItem value={key}>
-                                        {ACTIONS[key].name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={isCustom}
+                                    onChange={(e) =>
+                                        setIsCustom(e.target.checked)
+                                    }
+                                />
+                            }
+                            label="Кастомное действие"
+                        />
                     </ListItem>
                     <ListItem>
                         <FormControl fullWidth>

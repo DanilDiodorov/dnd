@@ -8,8 +8,10 @@ const readJson = (file) =>
             }
         }
 
-        fileReader.onerror = (error) => reject(error)
-        fileReader.readAsText(file)
+        try {
+            fileReader.onerror = (error) => reject(error)
+            fileReader.readAsText(file)
+        } catch (error) {}
     })
 
 export default readJson

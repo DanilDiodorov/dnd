@@ -38,7 +38,7 @@ import * as React from 'react'
 import PopupState, { bindTrigger, bindMenu } from 'material-ui-popup-state'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import ACTIONS from '../configs/actions'
-import VolumeUpIcon from '@mui/icons-material/VolumeUp'
+import TuneIcon from '@mui/icons-material/Tune'
 
 export default memo(({ data, isConnectable }) => {
     const dispatch = useDispatch()
@@ -62,7 +62,11 @@ export default memo(({ data, isConnectable }) => {
                         dispatch(setActionModalOpen(true))
                     }}
                 >
-                    {ACTIONS[action.action].icon}
+                    {ACTIONS[action.action] ? (
+                        ACTIONS[action.action].icon
+                    ) : (
+                        <TuneIcon />
+                    )}
                     <ListItemText style={{ marginLeft: '10px' }}>
                         {action.name}
                     </ListItemText>

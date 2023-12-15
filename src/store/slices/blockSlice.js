@@ -1,13 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit'
 import ACTIONS from '../../configs/actions'
 
-const initialState = {}
+const initialState = localStorage.getItem('blocks')
+    ? JSON.parse(localStorage.getItem('blocks'))
+    : {}
 
 export const blockSlice = createSlice({
     name: 'blocks',
     initialState,
     reducers: {
         setBlocks: (state, action) => {
+            console.log(state)
             state = action.payload
             return state
         },
@@ -99,6 +102,13 @@ export const blockSlice = createSlice({
         renameBlock: (state, action) => {
             state[action.payload.newName] = state[action.payload.oldName]
             delete state[action.payload.oldName]
+            for (let key in state) {
+                state[key].exit_points?.map((exit_point) => {
+                    if (exit_point.block === action.payload.oldName)
+                        exit_point.block = action.payload.newName
+                    return exit_point
+                })
+            }
             return state
         },
         duplicateBlock: (state, action) => {

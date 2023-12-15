@@ -26,13 +26,17 @@ import ExitPointModal from './components/ExitPointModal'
 import ActionModal from './components/ActionModal'
 import ConfigModal from './components/ConfigModal'
 import { Toaster } from 'sonner'
-import { styled } from '@mui/material/styles'
-import { Button } from '@mui/material'
+import { styled as Styled } from '@mui/material/styles'
+import { Button, Divider } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import RenameBlockModal from './components/RenameBlockModal'
 import checkPosition from './utils/checkPosition'
+import styled from 'styled-components'
+import axios from 'axios'
+import CodeModal from './components/CodeModal'
+import { setCodeModalOpen } from './store/slices/modalSlice'
 
-const VisuallyHiddenInput = styled('input')({
+const VisuallyHiddenInput = Styled('input')({
     clip: 'rect(0 0 0 0)',
     clipPath: 'inset(50%)',
     height: 1,
@@ -57,7 +61,7 @@ export default function App() {
 
     const onInit = async () => {
         const canvas = document.querySelector('.canvas')
-        const block1 = document.querySelector('.varient-1')
+        const block1 = document.querySelector('#var1')
         canvas.addEventListener('dragover', allowDrop)
         block1.addEventListener('dragstart', drag)
         canvas.addEventListener('drop', drop)
@@ -88,7 +92,8 @@ export default function App() {
     const onChange = async (event) => {
         if (event.target.files) {
             const parsedData = await readJson(event.target.files[0])
-            dispatch(setBlocks(checkPosition(parsedData.blocks)))
+            if (Object.keys(parsedData).length > 0)
+                dispatch(setBlocks(checkPosition(parsedData.blocks)))
         }
     }
 
@@ -98,6 +103,8 @@ export default function App() {
             setNodes(newBlocks)
             setEdges(newEdges)
         }
+        if (Object.keys(blocks).length > 0)
+            localStorage.setItem('blocks', JSON.stringify(blocks))
     }, [blocks])
 
     const onConnect = useCallback((params) => {}, [setEdges])
@@ -137,19 +144,15 @@ export default function App() {
             <ExitPointModal />
             <ConfigModal />
             <RenameBlockModal />
-            <div className="tools">
-                <div className="left">
-                    <div className="block varient-1" draggable="true" id="var1">
-                        Добавить блок
-                    </div>
-                </div>
-                <div className="right">
+            <CodeModal />
+            <Tools>
+                <Top>
                     <Button
                         component="label"
                         variant="contained"
                         startIcon={<CloudUploadIcon />}
                     >
-                        Upload file
+                        Загрузить файл
                         <VisuallyHiddenInput
                             type="file"
                             accept=".json,application/json"
@@ -160,10 +163,24 @@ export default function App() {
                         variant="contained"
                         onClick={() => exportToJson(blocks)}
                     >
-                        Download
+                        Скачать
                     </Button>
-                </div>
-            </div>
+                    <Button
+                        variant="contained"
+                        onClick={async () => {
+                            dispatch(setCodeModalOpen(true))
+                        }}
+                    >
+                        Редактировать скрипт
+                    </Button>
+                </Top>
+                <Divider />
+                <Bottom>
+                    <DragButton draggable="true" id="var1">
+                        Добавить блок
+                    </DragButton>
+                </Bottom>
+            </Tools>
             <div className="canvas">
                 <ReactFlow
                     onNodeDragStop={handleNodeDragStop}
@@ -185,3 +202,40 @@ export default function App() {
         </>
     )
 }
+
+const Tools = styled.div`
+    position: fixed;
+    height: 100vh;
+    width: 300px;
+    top: 0;
+    left: 0;
+    background-color: white;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+`
+
+const Top = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 30px 0;
+`
+
+const Bottom = styled.div`
+    padding: 30px 0;
+`
+
+const DragButton = styled.div`
+    width: 100%;
+    text-align: center;
+    padding: 20px 0;
+    border: 1px dashed grey;
+
+    &:hover {
+        cursor: grab;
+    }
+`
