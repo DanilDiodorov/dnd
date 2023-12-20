@@ -18,7 +18,7 @@ const convertBlocks = (blocks) => {
         })
         blocks[key].exit_points?.forEach((edge, index) => {
             newEdges.push({
-                id: `${key}->${edge.block}`,
+                id: `${key}->${edge.block}_${index}`,
                 source: key,
                 target: edge.block,
                 sourceHandle: `${key}_${index}`,

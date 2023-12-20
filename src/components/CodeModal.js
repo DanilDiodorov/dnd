@@ -13,6 +13,7 @@ import { Button, ListItem } from '@mui/material'
 
 const CodeModal = () => {
     const { codeModalOpen } = useSelector((state) => state.modals)
+    const { currentModel } = useSelector((state) => state.models)
     const [code, setCode] = useState('')
     const dispatch = useDispatch()
 
@@ -24,7 +25,7 @@ const CodeModal = () => {
         const getCode = async () => {
             try {
                 const response = await axios.get(
-                    'http://localhost:5000/python-file'
+                    `${process.env.REACT_APP_SERVER_URL}/python-file?name=${currentModel}`
                 )
                 setCode(response.data)
             } catch (error) {}
@@ -35,7 +36,10 @@ const CodeModal = () => {
     const onSubmit = (e) => {
         e.preventDefault()
         try {
-            axios.post('http://localhost:5000/python-file', { data: code })
+            axios.post(`${process.env.REACT_APP_SERVER_URL}/python-file`, {
+                data: code,
+                name: currentModel,
+            })
         } catch (error) {}
         dispatch(setCodeModalOpen(false))
     }

@@ -117,7 +117,7 @@ const ActionModal = () => {
                             </ListItem>
                             <ListItem>
                                 <TextField
-                                    label="Типы"
+                                    label="Тип"
                                     {...register('type')}
                                     fullWidth
                                 />
@@ -173,17 +173,21 @@ const ActionModal = () => {
                                 <MenuItem value="block_start">
                                     В начале
                                 </MenuItem>
-                                {blocks[currentAction?.name]?.actions.map(
-                                    (act) => {
-                                        if (act.name !== actions?.name)
-                                            return (
-                                                <MenuItem
-                                                    value={`${act.name}__finish`}
-                                                >
-                                                    {act.name}
-                                                </MenuItem>
-                                            )
-                                    }
+                                {blocks ? (
+                                    blocks[currentAction?.name]?.actions.map(
+                                        (act) => {
+                                            if (act.name !== actions?.name)
+                                                return (
+                                                    <MenuItem
+                                                        value={`${act.name}__finish`}
+                                                    >
+                                                        {act.name}
+                                                    </MenuItem>
+                                                )
+                                        }
+                                    )
+                                ) : (
+                                    <></>
                                 )}
                             </Select>
                         </FormControl>

@@ -17,36 +17,28 @@ import {
     deleteBlock,
     deleteExitPointBlock,
     setBlockPosition,
-    setBlocks,
 } from './store/slices/blockSlice'
-import exportToJson from './utils/exportToJSON'
 import convertBlocks from './utils/convertBlocks'
-import readJson from './utils/readJSON'
 import ExitPointModal from './components/ExitPointModal'
 import ActionModal from './components/ActionModal'
 import ConfigModal from './components/ConfigModal'
 import { Toaster } from 'sonner'
-import { styled as Styled } from '@mui/material/styles'
 import { Button, Divider } from '@mui/material'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import RenameBlockModal from './components/RenameBlockModal'
-import checkPosition from './utils/checkPosition'
 import styled from 'styled-components'
-import axios from 'axios'
 import CodeModal from './components/CodeModal'
-import { setCodeModalOpen } from './store/slices/modalSlice'
-
-const VisuallyHiddenInput = Styled('input')({
-    clip: 'rect(0 0 0 0)',
-    clipPath: 'inset(50%)',
-    height: 1,
-    overflow: 'hidden',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    whiteSpace: 'nowrap',
-    width: 1,
-})
+import {
+    setAddModelModalOpen,
+    setCodeModalOpen,
+    setExportModalOpen,
+    setVariablesModalOpen,
+} from './store/slices/modalSlice'
+import AddModelModal from './components/AddModelModal'
+import ModelsList from './components/ModelsList'
+import useModel from './hooks/useModel'
+import AddIcon from '@mui/icons-material/Add'
+import VariablesModal from './components/VariablesModal'
+import ExportModal from './components/ExportModal'
 
 const nodeTypes = {
     blockWithValue: BlockWithValue,
@@ -58,6 +50,8 @@ export default function App() {
     const blocks = useSelector((state) => state.blocks)
     const dispatch = useDispatch()
     const { screenToFlowPosition } = useReactFlow()
+    const { modelVariables, modelExport } = useSelector((state) => state.models)
+    const { saveModelFile } = useModel()
 
     const onInit = async () => {
         const canvas = document.querySelector('.canvas')
@@ -89,23 +83,14 @@ export default function App() {
         }
     }
 
-    const onChange = async (event) => {
-        if (event.target.files) {
-            const parsedData = await readJson(event.target.files[0])
-            if (Object.keys(parsedData).length > 0)
-                dispatch(setBlocks(checkPosition(parsedData.blocks)))
-        }
-    }
-
     useEffect(() => {
         if (blocks) {
             const [newBlocks, newEdges] = convertBlocks(blocks)
             setNodes(newBlocks)
             setEdges(newEdges)
+            saveModelFile()
         }
-        if (Object.keys(blocks).length > 0)
-            localStorage.setItem('blocks', JSON.stringify(blocks))
-    }, [blocks])
+    }, [blocks, modelExport, modelVariables])
 
     const onConnect = useCallback((params) => {}, [setEdges])
 
@@ -145,60 +130,79 @@ export default function App() {
             <ConfigModal />
             <RenameBlockModal />
             <CodeModal />
+            <AddModelModal />
+            <VariablesModal />
+            <ExportModal />
             <Tools>
-                <Top>
-                    <Button
-                        component="label"
-                        variant="contained"
-                        startIcon={<CloudUploadIcon />}
-                    >
-                        Загрузить файл
-                        <VisuallyHiddenInput
-                            type="file"
-                            accept=".json,application/json"
-                            onChange={onChange}
-                        />
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={() => exportToJson(blocks)}
-                    >
-                        Скачать
-                    </Button>
+                <ContentBlock>
+                    <DragButton draggable="true" id="var1">
+                        Добавить блок
+                    </DragButton>
+                </ContentBlock>
+                <Divider />
+                <ContentBlock>
                     <Button
                         variant="contained"
                         onClick={async () => {
                             dispatch(setCodeModalOpen(true))
                         }}
+                        disabled={blocks === null}
                     >
-                        Редактировать скрипт
+                        Скрипт
                     </Button>
-                </Top>
+                    <Button
+                        variant="contained"
+                        onClick={async () => {
+                            dispatch(setVariablesModalOpen(true))
+                        }}
+                        disabled={blocks === null}
+                    >
+                        Переменные
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={async () => {
+                            dispatch(setExportModalOpen(true))
+                        }}
+                        disabled={blocks === null}
+                    >
+                        Экспорты
+                    </Button>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => dispatch(setAddModelModalOpen(true))}
+                    >
+                        Добавить модель
+                    </Button>
+                </ContentBlock>
                 <Divider />
-                <Bottom>
-                    <DragButton draggable="true" id="var1">
-                        Добавить блок
-                    </DragButton>
-                </Bottom>
+                <ContentBlock>
+                    <ModelsList />
+                </ContentBlock>
             </Tools>
-            <div className="canvas">
-                <ReactFlow
-                    onNodeDragStop={handleNodeDragStop}
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    onConnect={onConnect}
-                    nodeTypes={nodeTypes}
-                    onInit={onInit}
-                    onNodesDelete={handleNodesDelete}
-                    onEdgesDelete={handleEdgesDelete}
-                >
-                    <Controls />
-                    <MiniMap />
-                    <Background variant="dots" gap={12} size={1} />
-                </ReactFlow>
-            </div>
+            {blocks ? (
+                <div className="canvas">
+                    <ReactFlow
+                        onNodeDragStop={handleNodeDragStop}
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onConnect={onConnect}
+                        nodeTypes={nodeTypes}
+                        onInit={onInit}
+                        onNodesDelete={handleNodesDelete}
+                        onEdgesDelete={handleEdgesDelete}
+                    >
+                        <Controls />
+                        <MiniMap />
+                        <Background variant="dots" gap={12} size={1} />
+                    </ReactFlow>
+                </div>
+            ) : (
+                <></>
+            )}
         </>
     )
 }
@@ -218,7 +222,7 @@ const Tools = styled.div`
     padding: 20px;
 `
 
-const Top = styled.div`
+const ContentBlock = styled.div`
     display: flex;
     flex-direction: column;
     gap: 15px;

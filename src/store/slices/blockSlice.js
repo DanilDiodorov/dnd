@@ -1,16 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit'
 import ACTIONS from '../../configs/actions'
 
-const initialState = localStorage.getItem('blocks')
-    ? JSON.parse(localStorage.getItem('blocks'))
-    : {}
+const initialState = null
 
 export const blockSlice = createSlice({
     name: 'blocks',
     initialState,
     reducers: {
         setBlocks: (state, action) => {
-            console.log(state)
             state = action.payload
             return state
         },

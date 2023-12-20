@@ -6,6 +6,9 @@ const initialState = {
     configModalOpen: false,
     renameBlockModalOpen: false,
     codeModalOpen: false,
+    addModelModalOpen: false,
+    variablesModalOpen: false,
+    exportModalOpen: false,
     currentAction: null,
     currentConfigs: null,
     currentExitPoint: null,
@@ -30,6 +33,15 @@ export const modalSlice = createSlice({
         },
         setCodeModalOpen: (state, action) => {
             state.codeModalOpen = action.payload
+        },
+        setAddModelModalOpen: (state, action) => {
+            state.addModelModalOpen = action.payload
+        },
+        setVariablesModalOpen: (state, action) => {
+            state.variablesModalOpen = action.payload
+        },
+        setExportModalOpen: (state, action) => {
+            state.exportModalOpen = action.payload
         },
         setCurrentAction: (state, action) => {
             state.currentAction = action.payload
@@ -56,6 +68,9 @@ export const {
     setRenameBlockModalOpen,
     setCurrentBlockName,
     setCodeModalOpen,
+    setAddModelModalOpen,
+    setVariablesModalOpen,
+    setExportModalOpen,
 } = modalSlice.actions
 
 export default modalSlice.reducer
